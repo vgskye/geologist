@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "vg.skye.geologist.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "EntityChunkDataAccessMixin",
+    "LevelStorageSessionMixin",
+    "PersistentStateManagerMixin",
+    "SerializingRegionBasedStorageMixin",
+    "ServerChunkManagerMixin",
+    "ServerWorldMixin",
+    "ThreadedAnvilChunkStorageMixin",
+    "VersionedChunkStorageMixin",
+    "WorldSaveHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+	}
+}

@@ -1,0 +1,27 @@
+{
+	"schemaVersion": 1,
+	"id": "geologist",
+	"version": "${version}",
+	"name": "Geologist",
+	"description": "An experimental, RocksDB-based backend for world storage.",
+	"authors": [
+		"Skye"
+	],
+	"contact": {
+		"sources": "https://github.com/vgskye/geologist"
+	},
+	"license": "Unlicense",
+	"icon": "assets/geologist/icon.png",
+	"environment": "*",
+	"entrypoints": {},
+	"mixins": [
+		"geologist.mixins.json"
+	],
+	"depends": {
+		"fabricloader": "*",
+		"minecraft": "=1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"fabric-language-kotlin": ">=1.9.23"
+	}
+}
