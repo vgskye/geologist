@@ -75,7 +75,7 @@ public abstract class EntityChunkDataAccessMixin {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void getRocks(ServerWorld world, Path path, DataFixer dataFixer, boolean dsync, Executor executor, CallbackInfo ci) {
         database = ((DatabaseHolder) world).geologist$getDatabase();
-        namespace = (world.getDimensionKey().getValue().toString() + "_entities").getBytes(StandardCharsets.UTF_8);
+        namespace = (world.getRegistryKey().getValue().toString() + "_entities").getBytes(StandardCharsets.UTF_8);
         try {
             this.dataLoadWorker.close();
             this.taskExecutor.close();

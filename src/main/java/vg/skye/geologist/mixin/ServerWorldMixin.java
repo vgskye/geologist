@@ -32,6 +32,7 @@ public class ServerWorldMixin implements DatabaseHolder {
 
     @NotNull
     @Override
+    @Unique
     public Database geologist$getDatabase() {
         return database;
     }

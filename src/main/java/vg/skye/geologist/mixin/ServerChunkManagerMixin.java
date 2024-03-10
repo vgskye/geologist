@@ -51,7 +51,7 @@ public class ServerChunkManagerMixin {
     ) {
         ((NeedsConfiguration) this.persistentStateManager).geologist$setDatabaseAndNamespace(
                 ((DatabaseHolder) session).geologist$getDatabase(),
-                (world.getDimensionKey().getValue().toString() + "_data").getBytes(StandardCharsets.UTF_8)
+                (world.getRegistryKey().getValue().toString() + "_data").getBytes(StandardCharsets.UTF_8)
         );
     }
 }

@@ -3,6 +3,8 @@ package vg.skye.geologist
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.nbt.NbtIo
 import org.rocksdb.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -35,6 +37,20 @@ data class DatabaseKey(
 }
 
 class Database(path: Path): AutoCloseable {
+    companion object {
+        init {
+            RocksDB.loadLibrary()
+        }
+        @JvmField
+        val LOGGER: Logger = LoggerFactory.getLogger("geologist")
+        @JvmStatic
+        fun deleteDatabase(path: Path) {
+            Options().use {
+                RocksDB.destroyDB(path.toString(), it)
+            }
+        }
+    }
+
     private data class SaneByteArray(
         val inner: ByteArray
     ) {
@@ -48,22 +64,31 @@ class Database(path: Path): AutoCloseable {
             return inner.contentEquals(other.inner)
         }
     }
-    init {
-        RocksDB.loadLibrary()
-    }
     private val dbOptions: DBOptions = DBOptions()
         .setCreateIfMissing(true)
+        .setIncreaseParallelism(6)
+        .setBytesPerSync(1048576)
     // TODO: the numbers here are out the wazoo. do some benchmarking
     private val compressionOptions: CompressionOptions = CompressionOptions()
         .setZStdMaxTrainBytes(8 * 1024)
         .setMaxDictBytes(1024)
-        .setLevel(1)
+        .setLevel(6)
         .setEnabled(true)
+    private val filter: Filter = BloomFilter(10.0, false)
+    private val tableFormatConfig: TableFormatConfig = BlockBasedTableConfig()
+        .setBlockSize(16 * 1024)
+        .setCacheIndexAndFilterBlocks(true)
+        .setPinL0FilterAndIndexBlocksInCache(true)
+        .setFormatVersion(5)
+        .setFilterPolicy(filter)
+        .setOptimizeFiltersForMemory(true)
     private val columnFamilyOptions: ColumnFamilyOptions = ColumnFamilyOptions()
-        .optimizeUniversalStyleCompaction()
+        .setLevelCompactionDynamicLevelBytes(true)
         .setCompressionType(CompressionType.LZ4_COMPRESSION)
         .setBottommostCompressionType(CompressionType.ZSTD_COMPRESSION)
         .setBottommostCompressionOptions(compressionOptions)
+        .setTableFormatConfig(tableFormatConfig)
+        .setCompactionPriority(CompactionPriority.MinOverlappingRatio)
     private val columnFamilies: ConcurrentMap<SaneByteArray, ColumnFamilyHandle> = ConcurrentHashMap()
     private val database: RocksDB
     init {
@@ -77,6 +102,7 @@ class Database(path: Path): AutoCloseable {
                 ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, columnFamilyOptions)
             )
         }
+        LOGGER.info("Found column families: {}", families.map { String(it.name) })
         val handles: MutableList<ColumnFamilyHandle> = ArrayList(families.size)
         database = RocksDB.open(
             dbOptions,
@@ -90,10 +116,9 @@ class Database(path: Path): AutoCloseable {
     }
 
     private fun getOrCreateColumnFamily(family: ByteArray): ColumnFamilyHandle {
-        synchronized(columnFamilies) {
-            return columnFamilies.computeIfAbsent(SaneByteArray(family)) {
-                database.createColumnFamily(ColumnFamilyDescriptor(it.inner, columnFamilyOptions))
-            }
+        return columnFamilies.computeIfAbsent(SaneByteArray(family)) {
+            LOGGER.info("Creating absent column family: {}", String(it.inner))
+            database.createColumnFamily(ColumnFamilyDescriptor(it.inner, columnFamilyOptions))
         }
     }
 
@@ -165,8 +190,13 @@ class Database(path: Path): AutoCloseable {
         } catch (e: Throwable) {
             exceptions += e
         }
+        try {
+            filter.close()
+        } catch (e: Throwable) {
+            exceptions += e
+        }
         if (exceptions.isNotEmpty()) {
-            val e = exceptions.removeLast()
+            val e = exceptions.removeFirst()
             for (exception in exceptions) {
                 e.addSuppressed(exception)
             }

@@ -38,12 +38,12 @@ public class ThreadedAnvilChunkStorageMixin implements DatabaseHolder {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void setup(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor executor, ThreadExecutor mainThreadExecutor, ChunkProvider chunkProvider, ChunkGenerator chunkGenerator, WorldGenerationProgressListener worldGenerationProgressListener, ChunkStatusChangeListener chunkStatusChangeListener, Supplier persistentStateManagerFactory, int viewDistance, boolean dsync, CallbackInfo ci) {
         database = ((DatabaseHolder) session).geologist$getDatabase();
-        byte[] poiNamespace = (this.world.getDimensionKey().getValue().toString() + "_poi").getBytes(StandardCharsets.UTF_8);
+        byte[] poiNamespace = (this.world.getRegistryKey().getValue().toString() + "_poi").getBytes(StandardCharsets.UTF_8);
         ((NeedsConfiguration) this.pointOfInterestStorage).geologist$setDatabaseAndNamespace(
                 database,
                 poiNamespace
         );
-        byte[] namespace = (this.world.getDimensionKey().getValue().toString() + "_chunks").getBytes(StandardCharsets.UTF_8);
+        byte[] namespace = (this.world.getRegistryKey().getValue().toString() + "_chunks").getBytes(StandardCharsets.UTF_8);
         ((NeedsConfiguration) this).geologist$setDatabaseAndNamespace(
                 database,
                 namespace
@@ -52,6 +52,7 @@ public class ThreadedAnvilChunkStorageMixin implements DatabaseHolder {
 
     @NotNull
     @Override
+    @Unique
     public Database geologist$getDatabase() {
         return database;
     }
