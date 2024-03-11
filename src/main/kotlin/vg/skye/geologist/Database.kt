@@ -129,6 +129,11 @@ class Database(path: Path): AutoCloseable {
         database.put(columnFamily, key.key, stream.toByteArray())
     }
 
+    fun writeBytes(key: DatabaseKey, value: ByteArray) {
+        val columnFamily = getOrCreateColumnFamily(key.namespace)
+        database.put(columnFamily, key.key, value)
+    }
+
     fun remove(key: DatabaseKey) {
         val columnFamily = getOrCreateColumnFamily(key.namespace)
         database.delete(columnFamily, key.key)
@@ -139,6 +144,11 @@ class Database(path: Path): AutoCloseable {
         val data = database.get(columnFamily, key.key) ?: return null
         val stream = ByteArrayInputStream(data)
         return NbtIo.read(DataInputStream(stream))
+    }
+
+    fun readBytes(key: DatabaseKey): ByteArray? {
+        val columnFamily = getOrCreateColumnFamily(key.namespace)
+        return database.get(columnFamily, key.key)
     }
 
     fun listKeys(namespace: ByteArray): List<ByteArray> {

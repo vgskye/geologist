@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.Uuids;
 import net.minecraft.world.WorldSaveHandler;
 import net.minecraft.world.level.storage.LevelStorage;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.*;
@@ -26,7 +27,7 @@ import java.util.UUID;
 
 @SuppressWarnings("OverwriteAuthorRequired")
 @Mixin(WorldSaveHandler.class)
-public class WorldSaveHandlerMixin {
+public class WorldSaveHandlerMixin implements DatabaseHolder {
 
     @Shadow @Final private static Logger LOGGER;
     @Shadow @Final protected DataFixer dataFixer;
@@ -93,5 +94,12 @@ public class WorldSaveHandlerMixin {
         for (int i=8; i<16; i++)
             lsb = (lsb << 8) | (data[i] & 0xff);
         return new UUID(msb, lsb);
+    }
+
+    @NotNull
+    @Override
+    @Unique
+    public Database geologist$getDatabase() {
+        return database;
     }
 }

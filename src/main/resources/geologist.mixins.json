@@ -5,9 +5,13 @@
   "mixins": [
     "EntityChunkDataAccessMixin",
     "LevelStorageSessionMixin",
+    "MinecraftServerMixin",
     "PersistentStateManagerMixin",
+    "PlayerAdvancementTrackerMixin",
+    "PlayerManagerMixin",
     "SerializingRegionBasedStorageMixin",
     "ServerChunkManagerMixin",
+    "ServerStatHandlerMixin",
     "ServerWorldMixin",
     "ThreadedAnvilChunkStorageMixin",
     "VersionedChunkStorageMixin",
