@@ -64,14 +64,16 @@ class Database(path: Path): AutoCloseable {
             return inner.contentEquals(other.inner)
         }
     }
+    // Configured with guidance from:
+    // general options: https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning
+    // dictionary settings: https://rocksdb.org/blog/2021/05/31/dictionary-compression.html#user-api
     private val dbOptions: DBOptions = DBOptions()
         .setCreateIfMissing(true)
         .setIncreaseParallelism(6)
         .setBytesPerSync(1048576)
-    // TODO: the numbers here are out the wazoo. do some benchmarking
     private val compressionOptions: CompressionOptions = CompressionOptions()
-        .setZStdMaxTrainBytes(8 * 1024)
-        .setMaxDictBytes(1024)
+        .setZStdMaxTrainBytes(100 * 16 * 1024)
+        .setMaxDictBytes(16 * 1024)
         .setLevel(6)
         .setEnabled(true)
     private val filter: Filter = BloomFilter(10.0, false)
