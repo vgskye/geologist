@@ -15,7 +15,8 @@
     "ServerWorldMixin",
     "ThreadedAnvilChunkStorageMixin",
     "VersionedChunkStorageMixin",
-    "WorldSaveHandlerMixin"
+    "WorldSaveHandlerMixin",
+    "WorldSavePathMixin"
   ],
   "injectors": {
     "defaultRequire": 1

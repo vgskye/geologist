@@ -67,6 +67,7 @@ class Database(path: Path): AutoCloseable {
     // Configured with guidance from:
     // general options: https://github.com/facebook/rocksdb/wiki/Setup-Options-and-Basic-Tuning
     // dictionary settings: https://rocksdb.org/blog/2021/05/31/dictionary-compression.html#user-api
+    private val cache = LRUCache(128 shl 20)
     private val dbOptions: DBOptions = DBOptions()
         .setCreateIfMissing(true)
         .setIncreaseParallelism(6)
@@ -81,7 +82,8 @@ class Database(path: Path): AutoCloseable {
         .setBlockSize(16 * 1024)
         .setCacheIndexAndFilterBlocks(true)
         .setPinL0FilterAndIndexBlocksInCache(true)
-        .setFormatVersion(5)
+        .setFormatVersion(6)
+        .setBlockCache(cache)
         .setFilterPolicy(filter)
         .setOptimizeFiltersForMemory(true)
     private val columnFamilyOptions: ColumnFamilyOptions = ColumnFamilyOptions()
@@ -204,6 +206,11 @@ class Database(path: Path): AutoCloseable {
         }
         try {
             filter.close()
+        } catch (e: Throwable) {
+            exceptions += e
+        }
+        try {
+            cache.close()
         } catch (e: Throwable) {
             exceptions += e
         }

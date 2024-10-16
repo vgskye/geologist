@@ -24,7 +24,7 @@ public class LevelStorageSessionMixin implements DatabaseHolder {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void openDatabase(LevelStorage levelStorage, String directoryName, Path path, CallbackInfo ci) {
-        database = new Database(path);
+        database = new Database(path.resolve("geologist-db"));
     }
 
     @Inject(method = "deleteSessionLock", at = @At("HEAD"))
